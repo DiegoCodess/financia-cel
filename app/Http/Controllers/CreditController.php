@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Client;
 use App\Models\Phone;
 use App\Models\CreditApplication;
 use App\Models\Instalment;
@@ -13,12 +12,6 @@ class CreditController extends Controller
 {
     public function store(Request $request)
     {
-        return response()->json([
-            'message' => 'Petición recibida correctamente',
-            'data' => $request->all()
-        ]);
-    }
-    /* public function store(Request $request) {
 
         $validated = $request->validate([
             'client_id' => 'required|exists:clients,id',
@@ -75,5 +68,33 @@ class CreditController extends Controller
             DB::rollBack();
             return response()->json(['error' => 'Error al procesar el crédito.'], 500);
         }
-    } */
+    }
+
+    public function index(Request $request)
+    {
+        $query = CreditApplication::with(['client', 'phone', 'instalments']);
+
+        if ($request->has('client_id')) {
+            $query->where('client_id', $request->client_id);
+        }
+
+        if ($request->has('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $credits = $query->get();
+
+        return response()->json($credits);
+    }
+
+    public function show($id)
+    {
+        $credit = CreditApplication::with('instalments')->find($id);
+
+        if (!$credit) {
+            return response()->json(['error' => 'Crédito no encontrado'], 404);
+        }
+
+        return response()->json($credit);
+    }
 }

@@ -16,17 +16,17 @@ class PhoneSeeder extends Seeder
         Phone::insert([
             [
                 'model' => 'iPhone 14',
-                'price' => 1200,
-                'stock' => 5,
+                'price' => 4800000,
+                'stock' => 2,
             ],
             [
                 'model' => 'Samsung Galaxy S23',
-                'price' => 950,
+                'price' => 3800000,
                 'stock' => 8,
             ],
             [
                 'model' => 'Xiaomi Redmi Note 12',
-                'price' => 300,
+                'price' => 1200000,
                 'stock' => 15,
             ],
         ]);

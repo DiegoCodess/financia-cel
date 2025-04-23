@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Solicitud de Crédito</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <h1>Formulario de Crédito</h1>
+
+  <form id="creditForm">
+    <label for="client">Cliente:</label>
+    <select id="clientSelect" name="client_id"></select>
+
+    <label for="phone">Teléfono:</label>
+    <select id="phoneSelect" name="phone_id"></select>
+
+    <label for="term">Plazo (meses):</label>
+    <input type="number" name="term" id="termInput" min="1" required>
+
+    <p id="simulacion"></p>
+
+    <button type="submit">Confirmar solicitud</button>
+  </form>
+
+  <p id="resultado"></p>
+
+  <script>
+    const apiBase = location.origin;
+  </script>
+
+  <script>
+
+    fetch(`${apiBase}/api/clients`)
+      .then(res => res.json())
+      .then(data => {
+        const select = document.getElementById('clientSelect');
+        data.forEach(client => {
+          const option = document.createElement('option');
+          option.value = client.id;
+          option.textContent = client.name;
+          select.appendChild(option);
+        });
+      });
+
+    let phoneData = [];
+    fetch(`${apiBase}/api/phones`)
+      .then(res => res.json())
+      .then(data => {
+        phoneData = data;
+        const select = document.getElementById('phoneSelect');
+        data.forEach(phone => {
+          const option = document.createElement('option');
+          option.value = phone.id;
+          option.textContent = `${phone.model} - $${phone.price}`;
+          select.appendChild(option);
+        });
+      });
+
+    document.getElementById('termInput').addEventListener('input', () => {
+      const phoneId = document.getElementById('phoneSelect').value;
+      const term = parseInt(document.getElementById('termInput').value);
+      const phone = phoneData.find(p => p.id == phoneId);
+
+      if (phone && term > 0) {
+        const interestRate = 0.015;
+        const total = phone.price * (1 + interestRate * term);
+        const cuota = (total / term).toFixed(2);
+        document.getElementById('simulacion').textContent = `Cuota mensual: $${cuota}`;
+      }
+    });
+
+    document.getElementById('creditForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const data = {
+        client_id: document.getElementById('clientSelect').value,
+        phone_id: document.getElementById('phoneSelect').value,
+        term: document.getElementById('termInput').value
+      };
+
+      fetch(`${apiBase}/api/credits`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+        .then(res => res.json())
+        .then(response => {
+          document.getElementById('resultado').textContent =
+            response.message || response.error || 'Solicitud enviada.';
+        })
+        .catch(err => {
+          document.getElementById('resultado').textContent = 'Error al enviar solicitud.';
+        });
+    });
+  </script>
+</body>
+
+</html>
